@@ -39,7 +39,7 @@ function _login (exchange, routingKey) {
                 console.log( n);
                 // _redirectLogin(msg.properties.replyTo, )
                 ch.sendToQueue(msg.properties.replyTo,
-                    new Buffer("Coucou, es-tu là ?"),
+                    new Buffer(n),
                     {correlationId: msg.properties.correlationId});
                 }, {noAck: true});
             });

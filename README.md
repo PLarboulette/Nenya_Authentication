@@ -1,4 +1,6 @@
 # Nenya_Authentication
-Microservice pour la gestion de l'authentification pour mon architecture microservices
 
-Come back on GitHub ! 
+Microservice for user authentication
+
+Written in nodeJS using Passport for authentication mechanisms 
+Connected to RabbitMQ for message exchange between microservices. 

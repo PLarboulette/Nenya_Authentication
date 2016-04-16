@@ -6,12 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
+s  "keywords": [
     "NodeJS",
     "Passport",
     "RabbitMQ"
   ],
   "author": "Pierre Larboulette",
+  "git" : "https://github.com/PLarboulette/Nenya_Authentication.git",
   "license": "MIT",
   "dependencies": {
     "amqplib": "^0.4.1"

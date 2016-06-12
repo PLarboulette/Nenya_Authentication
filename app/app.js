@@ -3,73 +3,89 @@
  */
 
 // Modules imports
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var Helper = require("./amqp/Helper");
-var bodyParser = require('body-parser');
-var passport = require("passport");
-var LocalStrategy = require('passport-local').Strategy;
-var session = require('express-session');
+const express = require('express');
+const appExpress = express();
+const http = require('http').Server(appExpress);
+const bodyParser = require('body-parser');
+const passport = require("passport");
+const LocalStrategy = require('passport-local').Strategy;
 
 // Own modules imports
-var AuthenticationService = require("./services/AuthenticationService");
+const AuthenticationService = require("./services/AuthenticationService");
+const Helper = require("./amqp/Helper");
+const config = require('./utils/config.json');
 
-// Private
 
-// Passport
-passport.use('local-login', new LocalStrategy(
-    {
-        usernameField: 'login',
-        passwordField: 'password'
-    },
-    function(username, password, callback) {
-        AuthenticationService.login(username, password, callback);
-    })
-);
+class app  {
 
-passport.serializeUser(function(user, cb) {
-    cb(null, JSON.parse(user).data.id);
-});
-
-passport.deserializeUser(function(id, cb) {
-   /* db.users.findById(id, function (err, user) {
-        if (err) { return cb(err); }
-        cb(null, user);
-    });*/
-
-    var user = {};
-    user.id = 1;
-    cb(null, user);
-
-});
-
-// Express app parameters
-app.set('port', process.env.PORT || 3001);
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-    secret: "tHiSiSasEcRetStr", resave: true, saveUninitialized: true }));
-app.use(passport.initialize());
-app.use(passport.session());
-
-http.listen(app.get('port'), function(){
-    console.log("INFO = [Listening on port 3001]");
-    Helper.start('localhost');
-
-});
-
-app.post('/login',
-    passport.authenticate('local-login', { failureRedirect: 'http://localhost:3000' }),
-    function(req, res) {
-         res.json(JSON.parse(req.user).data.id);
-    });
-
-app.get('/logout',
-    function(req, res){
-        req.logout();
-        res.redirect('/');
+    constructor () {
+        this.helper = new Helper('localhost');
+        this.authenticationService = new AuthenticationService(this.helper);
+        this.init();
+        this.initPassport();
+        this.initRoutes();
+        this.launch();
     }
-);
 
-module.exports.app = app;
+    init () {
+        appExpress.set('port', process.env.PORT || config.port);
+        appExpress.use(bodyParser.json());
+        appExpress.use(bodyParser.urlencoded({ extended: true }));
+        appExpress.use(passport.initialize());
+        appExpress.use(passport.session());
+    }
+
+    initPassport () {
+
+        passport.use('local-login', new LocalStrategy(
+            {
+                usernameField: 'login',
+                passwordField: 'password'
+            },
+            function(username, password, callback) {
+                this.authenticationService.login(username, password, callback);
+            })
+        );
+
+        passport.serializeUser(function(user, cb) {
+            cb(null, JSON.parse(user).data.id);
+        });
+
+        passport.deserializeUser(function(id, cb) {
+            /* db.users.findById(id, function (err, user) {
+             if (err) { return cb(err); }
+             cb(null, user);
+             });*/
+
+            var user = {};
+            user.id = 1;
+            cb(null, user);
+
+        });
+
+    }
+
+    initRoutes () {
+
+        appExpress.post('/login',
+            passport.authenticate('local-login', { failureRedirect: 'http://localhost:3000' }),
+            function(req, res) {
+                res.json(JSON.parse(req.user).data.id);
+            });
+
+        appExpress.get('/logout',
+            function(req, res){
+                req.logout();
+                res.redirect('/');
+            }
+        );
+    }
+
+    launch () {
+        http.listen(appExpress.get('port'), function(){
+            console.log("INFO = [Listening on port "+appExpress.get('port')+"]");
+        });
+    }
+}
+
+new app();

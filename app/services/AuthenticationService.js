@@ -2,30 +2,20 @@
  * Created by pierre on 18/04/16.
  */
 
-// Imports
-var Helper = require("./../amqp/Helper");
+'use strict';
 
-// Exports
-exports.login = _login;
+module.exports = class AuthenticationService {
 
-// Private
-
-function _login (login, password, callback) {
-    var user = {
-        "login" : login,
-        "password" : password
-    };
-    Helper.login(JSON.stringify(user), 'users' ,'login', callback);
-}
-
-module.Exports = class AuthenticationService {
-
-    constructor () {
-
+    constructor (helper) {
+        this.helper = helper;
     }
 
     login (login, password, callback) {
-
+        var user = {
+            "login" : login,
+            "password" : password
+        };
+        this.helper.login(JSON.stringify(user), 'users' ,'login', callback);
     }
 };
 
